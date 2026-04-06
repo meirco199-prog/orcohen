@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="משפחת כהן"/>
+<meta name="theme-color" content="#1A1A2E"/>
+<title>משפחת אור כהן</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:system-ui,-apple-system,sans-serif;background:#F8F6FF;direction:rtl;min-height:100dvh;display:flex;justify-content:center}
+#root{width:100%;max-width:430px;min-height:100dvh;display:flex;flex-direction:column;background:#F8F6FF}
+button{font-family:inherit;cursor:pointer;border:none}
+.scroll{flex:1;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch}
+.nav{display:flex;background:#fff;border-top:1px solid #ECECEC;padding:8px 0 max(6px,env(safe-area-inset-bottom))}
+.nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-size:10px;font-weight:400;color:#999;background:none}
+.nav button.on{font-weight:700}
+.card{background:#fff;border-radius:16px;padding:16px;margin-bottom:12px;border:1px solid #ECECEC}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.flash{text-align:center;font-size:13px;padding:10px;font-weight:600}
+.pin-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100dvh;padding:30px 20px;position:relative}
+.dots{display:flex;gap:16px;margin:24px 0}
+.dot{width:16px;height:16px;border-radius:50%;border:2px solid currentColor;transition:background .15s}
+.dot.on{background:currentColor}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%;max-width:280px}
+.pb{height:64px;border-radius:16px;background:#fff;border:1.5px solid #E0E0E0;font-size:22px;font-weight:600;color:#1A1A2E;touch-action:manipulation}
+.pb:active{background:#F0F0F0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{width:36px;height:36px;border:3px solid #E0E0E0;border-top-color:#3DBDB5;border-radius:50%;animation:spin .8s linear infinite}
+</style>
+</head>
+<body>
+<div id="root"><div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100dvh;gap:16px"><div class="spin"></div><div style="color:#666;font-size:14px">מתחבר...</div></div></div>
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import{getDatabase,ref,onValue,set,remove}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+var app=initializeApp({databaseURL:"https://orcohen-baa42-default-rtdb.firebaseio.com"});
+var DB=getDatabase(app);
+
+// pts = נקודות כוללות (לפרסים, ממשיכות להצטבר)
+// wpts = נקודות שבועיות (לדירוג בלבד, מתאפסות כל שבוע)
+
+var KIDS=[
+  {id:"adar", name:"אדר",  age:12,emoji:"🦁",color:"#FF6B6B",light:"#FFF0F0",dark:"#C0392B"},
+  {id:"agam", name:"אגם",  age:10,emoji:"🦋",color:"#A29BFE",light:"#F0EEFF",dark:"#6C5CE7"},
+  {id:"ariel",name:"אריאל",age:10,emoji:"🌸",color:"#FD79A8",light:"#FFF0F6",dark:"#C0165E"},
+  {id:"itay", name:"איתי", age:14,emoji:"⚡", color:"#00B894",light:"#EDFAF6",dark:"#007A5E"},
+];
+var TASKS=[
+  {id:"room",  label:"סידור חדר",      pts:1,emoji:"🛏️"},
+  {id:"dish",  label:"כלים / מדיח",    pts:1,emoji:"🍽️"},
+  {id:"hw",    label:"שיעורי בית",     pts:1,emoji:"📚"},
+  {id:"trash", label:"אשפה / מיחזור", pts:1,emoji:"♻️"},
+  {id:"cook",  label:"עזרה בבישול",    pts:1,emoji:"🍳"},
+  {id:"dog",   label:"לינקה / כלב",    pts:1,emoji:"🐕"},
+  {id:"wc",    label:"לנקות שירותים",  pts:2,emoji:"🚽"},
+  {id:"light", label:"עזרה עם אור",    pts:1,emoji:"💡"},
+  {id:"super", label:"עזרה בסופר",     pts:1,emoji:"🛒"},
+  {id:"bags",  label:"סידור קניות",    pts:1,emoji:"🛍️"},
+];
+var GOOD=[
+  {id:"help",  label:"עזרה לאח/אחות", pts:2,emoji:"🤝"},
+  {id:"kind",  label:"אדיבות",         pts:1,emoji:"💛"},
+  {id:"init",  label:"יוזמה",          pts:2,emoji:"⭐"},
+  {id:"share", label:"שיתוף",          pts:1,emoji:"🎁"},
+  {id:"give",  label:"ויתור",          pts:2,emoji:"🕊️"},
+];
+var BAD=[
+  {id:"fight", label:"ריב",              pts:-2,emoji:"😤"},
+  {id:"rude",  label:"חוצפה",            pts:-2,emoji:"🙄"},
+  {id:"lie",   label:"שקר",             pts:-3,emoji:"🤥"},
+  {id:"ign",   label:"התעלמות ממשימה",  pts:-1,emoji:"🚫"},
+];
+var PRIZES=[
+  {id:"p1",label:"בחירת ארוחת ערב",shek:4, emoji:"🍕"},
+  {id:"p2",label:"שעה נוספת מסך",  shek:3, emoji:"📱"},
+  {id:"p3",label:"טיול בחירה",     shek:10,emoji:"🎡"},
+  {id:"p4",label:"ג'אנק פוד",      shek:4, emoji:"🍔"},
+  {id:"p5",label:"לא לסדר חדר יום",shek:2, emoji:"😴"},
+  {id:"p6",label:"סרט בחירה",      shek:2, emoji:"🎬"},
+];
+
+function p2s(p){return(p/5).toFixed(1);}
+function s2p(s){return s*5;}
+
+var zero={adar:0,agam:0,ariel:0,itay:0};
+var live={pts:Object.assign({},zero),wpts:Object.assign({},zero),pend:{},hist:{},pins:{},photos:{}};
+var S={v:"home",pFor:null,pMode:null,pIn:"",pFirst:"",pErr:"",
+       kTab:"rep",kCat:"task",parTab:"dash",
+       fl:null,flT:null,cKid:"",cLabel:"",cPts:"",cBonus:true};
+
+function el(){return document.getElementById("root");}
+function gk(id){return KIDS.find(function(k){return k.id===id;});}
+function now(){return new Date().toLocaleTimeString("he-IL",{hour:"2-digit",minute:"2-digit"});}
+function uid(){return Date.now()+"_"+Math.random().toString(36).slice(2,6);}
+
+function flash(msg,bg,tc){
+  if(S.flT)clearTimeout(S.flT);
+  S.fl={msg:msg,bg:bg||"#EDFAF6",tc:tc||"#00714F"};
+  S.flT=setTimeout(function(){S.fl=null;render();},2500);
+  render();
+}
+function pArr(){return Object.values(live.pend||{});}
+function hArr(){return Object.values(live.hist||{}).sort(function(a,b){return(b.ts||0)-(a.ts||0);});}
+function fSet(p,v){return set(ref(DB,p),v);}
+function fDel(p){return remove(ref(DB,p));}
+
+onValue(ref(DB,"pts"),function(s){if(s.val())live.pts=Object.assign({},zero,s.val());render();});
+onValue(ref(DB,"wpts"),function(s){live.wpts=Object.assign({},zero,s.val()||{});render();});
+onValue(ref(DB,"pend"),function(s){live.pend=s.val()||{};render();});
+onValue(ref(DB,"hist"),function(s){live.hist=s.val()||{};render();});
+onValue(ref(DB,"pins"),function(s){live.pins=s.val()||{};render();});
+onValue(ref(DB,"photos"),function(s){live.photos=s.val()||{};render();});
+
+function ava(k,sz){
+  sz=sz||32;
+  var ph=live.photos&&live.photos[k.id];
+  if(ph)return'<img src="'+ph+'" style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;object-fit:cover;border:2px solid '+k.color+'"/>';
+  return'<div style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:'+k.light+';border:2px solid '+k.color+';display:flex;align-items:center;justify-content:center;font-size:'+Math.round(sz*.45)+'px">'+k.emoji+'</div>';
+}
+
+function badge(p){
+  var pos=p>=0;
+  return'<span style="font-weight:700;font-size:12px;color:'+(pos?"#00B894":"#FF6B6B")+';background:'+(pos?"#EDFAF6":"#FFF0F0")+';padding:3px 8px;border-radius:10px;border:1px solid '+(pos?"#00B89433":"#FF6B6B33")+'">'+(pos?"+":"")+p+'⭐</span>';
+}
+
+// דירוג שבועי לפי wpts
+function lb(cur){
+  var s=KIDS.slice().sort(function(a,b){return(live.wpts[b.id]||0)-(live.wpts[a.id]||0);});
+  var mx=Math.max.apply(null,KIDS.map(function(x){return live.wpts[x.id]||0;}).concat([1]));
+  return s.map(function(k,i){
+    var ic=cur&&k.id===cur;
+    return'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:10px;background:'+(ic?"#fff":"rgba(255,255,255,0.5)")+';border-radius:12px;border:'+(ic?"2px solid "+k.color:"1px solid rgba(255,255,255,0.3)")+'">'
+      +'<div style="font-size:18px;width:26px">'+["🥇","🥈","🥉","4️⃣"][i]+'</div>'
+      +ava(k,32)
+      +'<div style="flex:1"><div style="display:flex;justify-content:space-between;margin-bottom:3px">'
+        +'<span style="font-weight:700;font-size:13px;color:#1A1A2E">'+k.name+(i===0?" 👑":"")+(ic?" (אני)":"")+'</span>'
+        +'<span style="font-weight:700;font-size:12px;color:'+k.dark+'">'+(live.wpts[k.id]||0)+'⭐ השבוע</span>'
+      +'</div><div style="height:5px;border-radius:3px;background:#F0EEF8;overflow:hidden">'
+        +'<div style="width:'+((live.wpts[k.id]||0)/mx*100)+'%;height:100%;background:'+k.color+'"></div>'
+      +'</div></div></div>';
+  }).join("");
+}
+
+async function uploadPhoto(kid){
+  var inp=document.createElement("input");
+  inp.type="file";inp.accept="image/*";
+  inp.onchange=function(e){
+    var f=e.target.files[0];if(!f)return;
+    var r=new FileReader();
+    r.onload=function(ev){
+      var img=new Image();
+      img.onload=async function(){
+        var c=document.createElement("canvas");
+        var mx=200,sc=Math.min(mx/img.width,mx/img.height,1);
+        c.width=img.width*sc;c.height=img.height*sc;
+        c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+        await fSet("photos/"+kid,c.toDataURL("image/jpeg",0.7));
+        flash("📸 תמונה עודכנה!","#EDFAF6","#00714F");
+      };
+      img.src=ev.target.result;
+    };
+    r.readAsDataURL(f);
+  };
+  inp.click();
+}
+
+// PIN
+function openU(u){S.pFor=u;S.pIn="";S.pErr="";S.pFirst="";S.pMode=live.pins[u]?"enter":"set";S.v="pin";render();}
+function pp(d){if(S.pIn.length>=4)return;S.pIn+=d;S.pErr="";render();if(S.pIn.length===4)setTimeout(ps,180);}
+function pd(){S.pIn=S.pIn.slice(0,-1);S.pErr="";render();}
+async function ps(){
+  var p=S.pIn;
+  if(S.pMode==="enter"){
+    if(live.pins[S.pFor]===p){var u=S.pFor;S.v=u==="parent"?"parent":"kid_"+u;S.kTab="rep";S.kCat="task";S.parTab="dash";S.pIn="";S.pErr="";render();}
+    else{S.pIn="";S.pErr="קוד שגוי, נסה שוב";render();}
+  }else if(S.pMode==="set"){S.pFirst=p;S.pMode="confirm";S.pIn="";render();}
+  else{
+    if(p===S.pFirst){
+      await fSet("pins/"+S.pFor,p);
+      var u2=S.pFor;S.v=u2==="parent"?"parent":"kid_"+u2;S.kTab="rep";S.kCat="task";S.parTab="dash";
+      S.pIn="";S.pErr="";S.pFirst="";render();
+    }else{S.pIn="";S.pFirst="";S.pMode="set";S.pErr="הקודים לא תואמים";render();}
+  }
+}
+
+function rPin(){
+  var isP=S.pFor==="parent",k=isP?null:gk(S.pFor);
+  var col=isP?"#fff":(k?k.color:"#3DBDB5"),bg=isP?"#1A1A2E":(k?k.light:"#F8F6FF");
+  var em=isP?"👨‍👩":(k?k.emoji:""),nm=isP?"מאיר ודיאנה":(k?k.name:"");
+  var ti=S.pMode==="enter"?"שלום "+nm+"!":S.pMode==="set"?"הגדרת PIN חדש":"אישור PIN";
+  var su=S.pMode==="enter"?"הזן קוד PIN":S.pMode==="set"?nm+", בחר 4 ספרות":"הזן שוב לאישור";
+  var dots=[0,1,2,3].map(function(i){return'<div class="dot'+(i<S.pIn.length?" on":"")+'" style="color:'+col+'"></div>';}).join("");
+  var nums=[1,2,3,4,5,6,7,8,9].map(function(n){return'<button class="pb" onclick="window.W.pp(\''+n+'\')">'+n+'</button>';}).join("");
+  el().innerHTML='<div class="pin-wrap" style="background:'+bg+'">'
+    +'<button onclick="window.W.gh()" style="position:absolute;top:20px;right:20px;background:rgba(0,0,0,0.1);border-radius:50%;width:34px;height:34px;font-size:18px;color:'+(isP?"#fff":"#555")+'">‹</button>'
+    +'<div style="font-size:48px;margin-bottom:8px">'+em+'</div>'
+    +'<div style="font-size:20px;font-weight:800;color:'+(isP?"#fff":"#1A1A2E")+'">'+ti+'</div>'
+    +'<div style="font-size:13px;color:'+(isP?"rgba(255,255,255,0.6)":"#888")+';margin-top:6px;text-align:center">'+su+'</div>'
+    +(S.pErr?'<div style="color:#FF6B6B;font-size:13px;margin-top:8px;font-weight:600">'+S.pErr+'</div>':"")
+    +'<div class="dots">'+dots+'</div>'
+    +'<div class="pad">'+nums
+      +'<button class="pb" style="background:transparent;border-color:transparent;pointer-events:none"></button>'
+      +'<button class="pb" onclick="window.W.pp(\'0\')">0</button>'
+      +'<button class="pb" style="font-size:18px;color:#999" onclick="window.W.pd()">⌫</button>'
+    +'</div></div>';
+}
+
+function rHome(){
+  var pc=pArr().length;
+  var cards=KIDS.map(function(k){
+    return'<div style="background:'+k.light+';border-radius:20px;padding:16px 12px;border:2px solid '+k.color+'55;text-align:center">'
+      +'<button onclick="window.W.ou(\''+k.id+'\')" style="background:none;width:100%;touch-action:manipulation">'
+        +'<div style="display:flex;justify-content:center;margin-bottom:8px">'+ava(k,56)+'</div>'
+        +'<div style="font-weight:700;font-size:14px;color:'+k.dark+'">'+k.name+'</div>'
+        +'<div style="font-size:11px;color:#888;margin-bottom:5px">גיל '+k.age+'</div>'
+        +'<div style="background:'+k.color+';color:#fff;border-radius:12px;padding:3px 8px;font-weight:700;font-size:13px;margin-bottom:2px">'+(live.pts[k.id]||0)+'⭐ סה״כ</div>'
+        +'<div style="font-size:11px;color:'+k.dark+';margin-bottom:2px">'+p2s(live.pts[k.id]||0)+' ₪ לפרסים</div>'
+        +'<div style="font-size:10px;color:#aaa">השבוע: '+(live.wpts[k.id]||0)+'⭐</div>'
+        +'<div style="font-size:10px;opacity:0.7;margin-top:2px;color:'+k.dark+'">'+(live.pins[k.id]?"🔒":"🔓")+'</div>'
+      +'</button></div>';
+  }).join("");
+  el().innerHTML='<div style="display:flex;flex-direction:column;min-height:100dvh">'
+    +'<div style="background:linear-gradient(135deg,#1A1A2E,#2D2D5E);padding:20px 16px 16px">'
+      +'<div style="text-align:center;margin-bottom:14px"><div style="font-size:26px">✨</div><div style="font-size:20px;font-weight:800;color:#fff">משפחת אור כהן</div></div>'
+      +'<div style="background:rgba(255,255,255,0.1);border-radius:16px;padding:14px">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'
+          +'<div style="font-weight:700;font-size:14px;color:#fff">🏆 דירוג שבועי</div>'
+          +'<div style="font-size:10px;color:rgba(255,255,255,0.5)">מתאפס ידנית ע״י ההורים</div>'
+        +'</div>'+lb(null)+'</div></div>'
+    +'<div class="scroll">'
+      +'<div style="font-size:11px;font-weight:700;color:#999;letter-spacing:1px;margin-bottom:12px">הילדים</div>'
+      +'<div class="g2" style="margin-bottom:20px">'+cards+'</div>'
+      +'<div style="font-size:11px;font-weight:700;color:#999;letter-spacing:1px;margin-bottom:12px">הורים</div>'
+      +'<button onclick="window.W.ou(\'parent\')" style="width:100%;background:#1A1A2E;border-radius:16px;padding:16px 20px;display:flex;align-items:center;gap:14px;touch-action:manipulation">'
+        +'<div style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:22px">👨‍👩</div>'
+        +'<div style="text-align:right"><div style="font-weight:700;font-size:15px;color:#fff">מאיר ודיאנה</div>'
+        +'<div style="font-size:12px;color:rgba(255,255,255,0.5)">'+(live.pins["parent"]?"🔒 ":"🔓 ")+'ניהול · אישור · איפוס</div></div>'
+        +(pc>0?'<div style="background:#FF6B6B;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;margin-right:auto">'+pc+'</div>':"")
+      +'</button>'
+    +'</div></div>';
+}
+
+function rKid(kid){
+  var k=gk(kid),p=live.pts[kid]||0,wp=live.wpts[kid]||0,tab=S.kTab,cat=S.kCat;
+  var myP=pArr().filter(function(x){return x.kid===kid;});
+  var myH=hArr().filter(function(x){return x.kid===kid;});
+  var fl=S.fl?'<div class="flash" style="background:'+S.fl.bg+';color:'+S.fl.tc+'">'+S.fl.msg+'</div>':"";
+  var c="";
+
+  if(tab==="rep"){
+    var pr="";
+    if(myP.length>0){
+      pr='<div class="card" style="border:1px solid '+k.color+'44;margin-bottom:12px">'
+        +'<div style="font-size:12px;font-weight:700;color:#666;margin-bottom:8px">⏳ ממתין לאישור</div>'
+        +myP.map(function(x){
+          return'<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #F5F5F5">'
+            +'<span style="font-size:13px">'+x.emoji+' '+x.label+'</span>'
+            +'<div style="display:flex;gap:8px;align-items:center">'+badge(x.pts)
+            +'<button onclick="window.W.dp(\''+x.id+'\')" style="background:#FFF0F0;color:#FF6B6B;width:30px;height:30px;border-radius:50%;font-size:16px;display:flex;align-items:center;justify-content:center;touch-action:manipulation">×</button>'
+            +'</div></div>';
+        }).join("")+'</div>';
+    }
+    var items=cat==="task"?TASKS:GOOD;
+    var cb=[["task","🛏️","מטלות"],["good","💛","התנהגות"]].map(function(a){
+      return'<button onclick="window.W.skc(\''+a[0]+'\')" style="flex:1;padding:9px 4px;border-radius:12px;border:1.5px solid '+(cat===a[0]?k.color:"#E0E0E0")+';background:'+(cat===a[0]?k.color:"#fff")+';color:'+(cat===a[0]?"#fff":"#666")+';font-weight:600;font-size:11px;touch-action:manipulation">'+a[1]+' '+a[2]+'</button>';
+    }).join("");
+    var ib=items.map(function(item){
+      return'<button onclick="window.W.rep(\''+kid+'\',\''+item.id+'\',\''+cat+'\')" style="background:#fff;border-radius:14px;padding:14px 10px;border:1px solid '+k.color+'44;text-align:center;display:flex;flex-direction:column;align-items:center;gap:5px;width:100%;touch-action:manipulation">'
+        +'<span style="font-size:22px">'+item.emoji+'</span>'
+        +'<span style="font-size:11px;font-weight:500;color:#1A1A2E;line-height:1.3">'+item.label+'</span>'
+        +badge(item.pts)+'</button>';
+    }).join("");
+    c=pr+'<div style="display:flex;gap:6px;margin-bottom:12px">'+cb+'</div><div class="g2">'+ib+'</div>';
+  }
+
+  if(tab==="events"){
+    var mb=myH.filter(function(x){return x.pts<0;});
+    c='<div class="card" style="background:#FFF0F0;border:1px solid #FF6B6B33">'
+      +'<div style="font-size:13px;color:#C0392B;font-weight:600;margin-bottom:4px">⚠️ אירועי משמעת</div>'
+      +'<div style="font-size:12px;color:#888">הורים מנהלים סעיף זה</div></div>'
+      +(mb.length===0?'<div style="text-align:center;padding:30px 0;color:#999">אין אירועים! 🎉</div>':
+        mb.map(function(h){
+          return'<div style="background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;border:1px solid #FF6B6B22;display:flex;justify-content:space-between;align-items:center">'
+            +'<div><div style="font-size:13px;font-weight:500;color:#1A1A2E">'+h.emoji+' '+h.label+'</div><div style="font-size:11px;color:#999">'+h.time+'</div></div>'
+            +badge(h.pts)+'</div>';
+        }).join(""));
+  }
+
+  if(tab==="prizes"){
+    c='<div class="card" style="border:1px solid '+k.color+'44">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+        +'<div style="font-size:13px;color:#666">נקודות לפרסים</div>'
+        +'<div style="font-weight:800;font-size:18px;color:'+k.dark+'">'+p+'⭐ = '+p2s(p)+' ₪</div>'
+      +'</div>'
+      +'<div style="display:flex;justify-content:space-between;align-items:center">'
+        +'<div style="font-size:12px;color:#aaa">דירוג השבוע</div>'
+        +'<div style="font-size:13px;font-weight:700;color:'+k.color+'">'+wp+'⭐</div>'
+      +'</div></div>'
+      +'<div style="font-size:11px;color:#888;margin-bottom:10px;text-align:center">5 נקודות = 1 ₪ · הנקודות לפרסים לא מתאפסות</div>'
+      +'<div class="g2">'+PRIZES.map(function(pr){
+        var need=s2p(pr.shek),can=p>=need;
+        return'<button onclick="window.W.rdm(\''+kid+'\',\''+pr.id+'\')" style="background:'+(can?k.light:"#F5F5F5")+';border-radius:14px;padding:14px 10px;border:1.5px solid '+(can?k.color:"#E0E0E0")+';opacity:'+(can?1:0.6)+';text-align:center;display:flex;flex-direction:column;align-items:center;gap:5px;width:100%;touch-action:manipulation">'
+          +'<span style="font-size:24px">'+pr.emoji+'</span>'
+          +'<span style="font-size:11px;font-weight:600;color:#1A1A2E;line-height:1.3">'+pr.label+'</span>'
+          +'<span style="font-size:13px;font-weight:800;color:'+(can?k.dark:"#999")+'">'+pr.shek+' ₪</span>'
+          +'<span style="font-size:10px;color:#999">'+need+'⭐</span></button>';
+      }).join("")+'</div>';
+  }
+
+  if(tab==="profile"){
+    var hasPh=live.photos&&live.photos[kid];
+    c='<div style="text-align:center;padding:24px 20px">'
+      +'<div style="display:flex;justify-content:center;margin-bottom:16px">'+ava(k,100)+'</div>'
+      +'<div style="font-weight:800;font-size:20px;color:'+k.dark+';margin-bottom:4px">'+k.name+'</div>'
+      +'<div style="font-size:13px;color:#888;margin-bottom:24px">גיל '+k.age+'</div>'
+      +'<button onclick="window.W.uph(\''+kid+'\')" style="width:100%;background:'+k.color+';color:#fff;border-radius:14px;padding:16px;font-weight:700;font-size:16px;touch-action:manipulation;display:block;margin-bottom:10px">📸 העלה / החלף תמונה</button>'
+      +(hasPh?'<button onclick="window.W.delph(\''+kid+'\')" style="width:100%;background:#fff;color:#FF6B6B;border-radius:14px;padding:12px;font-weight:700;font-size:14px;touch-action:manipulation;border:1.5px solid #FF6B6B44;display:block">🗑️ מחק תמונה</button>':"")
+      +'<div style="font-size:12px;color:#aaa;margin-top:14px">התמונה תופיע לכל המשפחה 👨‍👩‍👧‍👦</div>'
+    +'</div>';
+  }
+
+  if(tab==="hist"){
+    c=myH.length===0?'<div style="text-align:center;padding:30px 0;color:#999">אין פעילות עדיין</div>':
+      myH.map(function(h){
+        return'<div style="background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;border:1px solid '+(h.pts<0?"#FF6B6B22":k.color+"22")+';display:flex;justify-content:space-between;align-items:center">'
+          +'<div><div style="font-size:13px;font-weight:500;color:#1A1A2E">'+h.emoji+' '+h.label+'</div><div style="font-size:11px;color:#999">'+h.time+'</div></div>'
+          +badge(h.pts)+'</div>';
+      }).join("");
+  }
+
+  var nav=[["rep","📝","דיווח"],["events","⚠️","אירועים"],["prizes","🎁","פרסים"],["profile","🤳","פרופיל"],["hist","📋","היסטוריה"]].map(function(a){
+    return'<button class="'+(tab===a[0]?"on":"")+'" style="color:'+(tab===a[0]?k.color:"#999")+'" onclick="window.W.skt(\''+a[0]+'\')">'+a[1]+'<br>'+a[2]+'</button>';
+  }).join("");
+
+  el().innerHTML='<div style="display:flex;flex-direction:column;min-height:100dvh">'
+    +'<div style="background:'+k.color+';padding:16px 20px 14px">'
+      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'
+        +'<button onclick="window.W.gh()" style="background:rgba(255,255,255,0.3);color:#fff;width:30px;height:30px;border-radius:50%;font-size:18px;touch-action:manipulation">‹</button>'
+        +ava(k,44)
+        +'<div><div style="font-size:17px;font-weight:800;color:#fff">'+k.name+'</div><div style="font-size:11px;color:rgba(255,255,255,0.8)">גיל '+k.age+'</div></div>'
+        +'<div style="margin-right:auto;text-align:center">'
+          +'<div style="font-size:10px;color:rgba(255,255,255,0.75);margin-bottom:1px">נקודות לפרסים</div>'
+          +'<div style="font-size:26px;font-weight:900;color:#fff;line-height:1">'+p+'</div>'
+          +'<div style="font-size:11px;color:rgba(255,255,255,0.85)">= '+p2s(p)+' ₪</div>'
+        +'</div>'
+      +'</div>'
+      +'<div style="background:rgba(255,255,255,0.2);border-radius:10px;padding:7px 12px;display:flex;justify-content:space-between;align-items:center">'
+        +'<span style="font-size:11px;color:rgba(255,255,255,0.8)">🏆 דירוג השבוע</span>'
+        +'<span style="font-weight:800;font-size:14px;color:#fff">'+wp+' ⭐</span>'
+      +'</div>'
+    +'</div>'+fl
+    +'<div class="scroll" style="background:'+k.light+'">'+c+'</div>'
+    +'<div class="nav">'+nav+'</div>'
+  +'</div>';
+}
+
+function rParent(){
+  var tab=S.parTab,pa=pArr(),ha=hArr();
+  var fl=S.fl?'<div class="flash" style="background:'+S.fl.bg+';color:'+S.fl.tc+'">'+S.fl.msg+'</div>':"";
+  var c="";
+
+  if(tab==="dash"){
+    var kc=KIDS.map(function(k){
+      return'<div style="background:'+k.light+';border-radius:16px;padding:14px;border:1.5px solid '+k.color+'55;text-align:center">'
+        +'<div style="display:flex;justify-content:center;margin-bottom:6px">'+ava(k,48)+'</div>'
+        +'<div style="font-weight:700;font-size:13px;color:'+k.dark+'">'+k.name+'</div>'
+        +'<div style="font-size:11px;color:#aaa;margin-top:1px">סה״כ לפרסים</div>'
+        +'<div style="font-weight:800;font-size:20px;color:'+k.color+';margin:2px 0">'+(live.pts[k.id]||0)+'⭐</div>'
+        +'<div style="font-size:11px;color:#666;margin-bottom:4px">'+p2s(live.pts[k.id]||0)+' ₪</div>'
+        +'<div style="font-size:10px;color:#aaa;background:rgba(0,0,0,0.04);border-radius:8px;padding:3px 0;margin-bottom:6px">השבוע: '+(live.wpts[k.id]||0)+'⭐</div>'
+        +'<button onclick="window.W.uph(\''+k.id+'\')" style="font-size:10px;color:'+k.dark+';background:'+k.light+';border:1px solid '+k.color+'44;padding:4px 8px;border-radius:8px;width:100%;margin-bottom:4px;touch-action:manipulation">📸 תמונה</button>'
+        +'<button onclick="window.W.rpin(\''+k.id+'\')" style="font-size:10px;color:'+k.dark+';background:'+k.light+';border:1px solid '+k.color+'44;padding:4px 8px;border-radius:8px;width:100%;touch-action:manipulation">🔑 אפס PIN</button>'
+      +'</div>';
+    }).join("");
+    c='<div class="card">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'
+        +'<div style="font-weight:700;font-size:15px;color:#1A1A2E">🏆 דירוג שבועי</div>'
+        +'<div style="font-size:10px;color:#aaa">נקודות השבוע בלבד</div>'
+      +'</div>'+lb(null)
+      +'<button onclick="window.W.resetWeek()" style="width:100%;margin-top:10px;padding:12px;border-radius:12px;background:#FFF9E6;border:1.5px solid #FFD70066;color:#8D6E00;font-weight:700;font-size:14px;touch-action:manipulation">🔄 אפס דירוג שבועי בלבד</button>'
+      +'<div style="font-size:11px;color:#aaa;text-align:center;margin-top:6px">נקודות הפרסים לא מושפעות</div>'
+    +'</div>'
+    +'<div class="g2">'+kc+'</div>';
+  }
+
+  if(tab==="pend"){
+    c=pa.length===0?'<div style="text-align:center;padding:40px 0;color:#999"><div style="font-size:40px">✅</div><div style="margin-top:8px">הכל מאושר!</div></div>':
+      pa.map(function(item){
+        var k=gk(item.kid);
+        return'<div style="background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;border:1px solid '+k.color+'55">'
+          +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'+ava(k,38)
+          +'<div style="flex:1"><div style="font-weight:600;font-size:13px;color:#1A1A2E">'+k.name+'</div><div style="font-size:12px;color:#666">'+item.emoji+' '+item.label+'</div></div>'
+          +badge(item.pts)+'</div>'
+          +'<div style="display:flex;gap:8px">'
+            +'<button onclick="window.W.apr(\''+item.id+'\')" style="flex:1;padding:11px;border-radius:10px;background:#EDFAF6;color:#00B894;font-weight:700;font-size:13px;touch-action:manipulation">✓ אשר</button>'
+            +'<button onclick="window.W.rej(\''+item.id+'\')" style="flex:1;padding:11px;border-radius:10px;background:#FFF0F0;color:#FF6B6B;font-weight:700;font-size:13px;touch-action:manipulation">✕ דחה</button>'
+          +'</div></div>';
+      }).join("");
+  }
+
+  if(tab==="add"){
+    var isB=S.cBonus;
+    var kb=KIDS.map(function(k){
+      return'<button onclick="window.W.sck(\''+k.id+'\')" style="padding:8px 14px;border-radius:20px;border:2px solid '+(S.cKid===k.id?k.color:"#E0E0E0")+';background:'+(S.cKid===k.id?k.light:"#fff")+';color:'+(S.cKid===k.id?k.dark:"#666")+';font-weight:600;font-size:13px;touch-action:manipulation">'+k.emoji+' '+k.name+'</button>';
+    }).join("");
+    var qb=BAD.map(function(item){
+      return'<button onclick="window.W.qb(\''+item.id+'\')" style="background:#FFF0F0;border-radius:12px;padding:10px 8px;border:1px solid #FF6B6B33;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px;width:100%;touch-action:manipulation">'
+        +'<span style="font-size:20px">'+item.emoji+'</span>'
+        +'<span style="font-size:11px;font-weight:500;color:#C0392B">'+item.label+'</span>'
+        +badge(item.pts)+'</button>';
+    }).join("");
+    c='<div class="card"><div style="font-size:12px;font-weight:700;color:#666;margin-bottom:10px">סוג פעולה</div>'
+      +'<div style="display:flex;gap:8px">'
+        +'<button onclick="window.W.sb(true)" style="flex:1;padding:11px;border-radius:12px;border:2px solid '+(isB?"#00B894":"#E0E0E0")+';background:'+(isB?"#EDFAF6":"#fff")+';color:'+(isB?"#00714F":"#666")+';font-weight:700;font-size:14px;touch-action:manipulation">🌟 פרס / בונוס</button>'
+        +'<button onclick="window.W.sb(false)" style="flex:1;padding:11px;border-radius:12px;border:2px solid '+(!isB?"#FF6B6B":"#E0E0E0")+';background:'+(!isB?"#FFF0F0":"#fff")+';color:'+(!isB?"#C0392B":"#666")+';font-weight:700;font-size:14px;touch-action:manipulation">⚠️ עונש</button>'
+      +'</div></div>'
+      +'<div class="card"><div style="font-size:12px;font-weight:700;color:#666;margin-bottom:8px">בחר ילד</div>'
+        +'<div style="display:flex;gap:8px;flex-wrap:wrap">'+kb+'</div></div>'
+      +'<div class="card">'
+        +'<div style="font-size:12px;font-weight:700;color:#666;margin-bottom:6px">סיבה</div>'
+        +'<input id="il" placeholder="'+(isB?"עזר לסבתא...":"חוצפה...")+'" value="'+S.cLabel+'" oninput="S.cLabel=this.value" style="width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid #E0E0E0;font-size:14px;margin-bottom:10px;outline:none;display:block"/>'
+        +'<div style="font-size:12px;font-weight:700;color:#666;margin-bottom:6px">כמות נקודות</div>'
+        +'<input id="ip" type="number" min="1" placeholder="מספר נקודות..." value="'+S.cPts+'" oninput="S.cPts=this.value" style="width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid #E0E0E0;font-size:14px;margin-bottom:14px;outline:none;display:block"/>'
+        +'<button onclick="window.W.ac()" style="width:100%;padding:14px;border-radius:12px;background:'+(isB?"#00B894":"#FF6B6B")+';color:#fff;font-weight:700;font-size:15px;touch-action:manipulation">'+(isB?"✅ הוסף פרס / בונוס":"🚫 הוסף עונש")+'</button>'
+      +'</div>'
+      +'<div class="card"><div style="font-size:12px;font-weight:700;color:#666;margin-bottom:10px">⚡ אירועים מהירים</div>'
+        +'<div class="g2">'+qb+'</div></div>';
+  }
+
+  if(tab==="hist"){
+    c='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'
+      +'<div style="font-weight:700;font-size:15px;color:#1A1A2E">📋 היסטוריה</div>'
+      +'<button onclick="window.W.ch()" style="font-size:11px;color:#FF6B6B;background:#FFF0F0;border:1px solid #FF6B6B44;padding:5px 12px;border-radius:8px;touch-action:manipulation">מחק הכל</button>'
+    +'</div>'
+    +(ha.length===0?'<div style="text-align:center;padding:30px 0;color:#999">אין היסטוריה</div>':
+      ha.map(function(h){
+        var k=gk(h.kid);
+        return'<div style="background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;border:1px solid #ECECEC;display:flex;align-items:center;gap:10px">'
+          +'<div style="width:30px;height:30px;border-radius:50%;background:'+k.light+';display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">'+k.emoji+'</div>'
+          +'<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;color:#1A1A2E">'+k.name+' · '+h.emoji+' '+h.label+'</div><div style="font-size:11px;color:#999">'+h.time+'</div></div>'
+          +badge(h.pts)
+          +'<button onclick="window.W.dh(\''+h.id+'\')" style="background:#FFF0F0;color:#FF6B6B;min-width:30px;width:30px;height:30px;border-radius:50%;font-size:16px;display:flex;align-items:center;justify-content:center;touch-action:manipulation;flex-shrink:0">×</button>'
+        +'</div>';
+      }).join(""));
+  }
+
+  var nav=[["dash","🏠","ראשי"],["pend","⏳","אישור"+(pa.length>0?" ("+pa.length+")":"")],["add","➕","הוסף"],["hist","📋","היסטוריה"]].map(function(a){
+    return'<button class="'+(tab===a[0]?"on":"")+'" style="color:'+(tab===a[0]?"#1A1A2E":"#999")+'" onclick="window.W.spt(\''+a[0]+'\')">'+a[1]+'<br>'+a[2]+'</button>';
+  }).join("");
+
+  el().innerHTML='<div style="display:flex;flex-direction:column;min-height:100dvh">'
+    +'<div style="background:#1A1A2E;padding:14px 20px 10px;display:flex;align-items:center;gap:10px">'
+      +'<button onclick="window.W.gh()" style="background:rgba(255,255,255,0.15);color:#fff;width:30px;height:30px;border-radius:50%;font-size:16px;touch-action:manipulation">‹</button>'
+      +'<div style="flex:1"><div style="font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:1px">PARENT MODE</div><div style="font-size:15px;font-weight:700;color:#fff">מאיר ודיאנה 👨‍👩‍👧‍👦</div></div>'
+      +'<button onclick="window.W.ra()" style="background:rgba(255,100,100,0.25);border:1px solid rgba(255,100,100,0.4);color:#ffaaaa;font-size:11px;padding:5px 10px;border-radius:10px;touch-action:manipulation">🔄 איפוס הכל</button>'
+    +'</div>'+fl
+    +'<div class="scroll" style="background:#F8F6FF">'+c+'</div>'
+    +'<div class="nav">'+nav+'</div>'
+  +'</div>';
+}
+
+function render(){
+  if(S.v==="pin")rPin();
+  else if(S.v==="home")rHome();
+  else if(S.v==="parent")rParent();
+  else rKid(S.v.replace("kid_",""));
+}
+
+window.W={
+  gh:function(){S.v="home";render();},
+  ou:openU,pp:pp,pd:pd,
+  skt:function(t){S.kTab=t;render();},
+  skc:function(c){S.kCat=c;render();},
+  spt:function(t){S.parTab=t;render();},
+  sck:function(id){S.cKid=id;render();},
+  sb:function(v){S.cBonus=v;render();},
+  uph:uploadPhoto,
+  delph:async function(kid){await fDel("photos/"+kid);flash("🗑️ תמונה נמחקה","#F0EEFF","#6C5CE7");},
+  dp:async function(id){await fDel("pend/"+id);},
+  apr:async function(id){
+    var item=pArr().find(function(x){return x.id===id;});
+    if(!item)return;
+    // עדכן גם pts (לפרסים) וגם wpts (שבועי)
+    await fSet("pts/"+item.kid,Math.max(0,(live.pts[item.kid]||0)+item.pts));
+    await fSet("wpts/"+item.kid,Math.max(0,(live.wpts[item.kid]||0)+item.pts));
+    var hid=uid();
+    await fSet("hist/"+hid,Object.assign({},item,{id:hid,time:now(),ts:Date.now()}));
+    await fDel("pend/"+id);
+  },
+  rej:async function(id){await fDel("pend/"+id);},
+  ac:async function(){
+    var kid=S.cKid;
+    var el_l=document.getElementById("il"),el_p=document.getElementById("ip");
+    var label=el_l?el_l.value.trim():S.cLabel.trim();
+    var raw=parseInt(el_p?el_p.value:S.cPts);
+    if(!kid||!label||isNaN(raw)||raw<=0)return;
+    var pts=S.cBonus?raw:-raw;
+    await fSet("pts/"+kid,Math.max(0,(live.pts[kid]||0)+pts));
+    await fSet("wpts/"+kid,Math.max(0,(live.wpts[kid]||0)+pts));
+    var hid=uid();
+    await fSet("hist/"+hid,{id:hid,kid:kid,type:S.cBonus?"bonus":"bad",label:label,pts:pts,emoji:pts>0?"🌟":"⚠️",time:now(),ts:Date.now()});
+    S.cKid="";S.cLabel="";S.cPts="";
+    flash(pts>0?"✅ בונוס נוסף!":"🚫 עונש הוחל!",pts>0?"#EDFAF6":"#FFF0F0",pts>0?"#00714F":"#C0392B");
+  },
+  qb:async function(itemId){
+    var item=BAD.find(function(x){return x.id===itemId;});
+    if(!S.cKid){flash("בחר ילד קודם","#FFF9E6","#8D6E00");return;}
+    var kid=S.cKid;
+    await fSet("pts/"+kid,Math.max(0,(live.pts[kid]||0)+item.pts));
+    await fSet("wpts/"+kid,Math.max(0,(live.wpts[kid]||0)+item.pts));
+    var hid=uid();
+    await fSet("hist/"+hid,{id:hid,kid:kid,type:"bad",label:item.label,pts:item.pts,emoji:item.emoji,time:now(),ts:Date.now()});
+    flash(item.emoji+" "+item.label+" הוחל","#FFF0F0","#C0392B");
+  },
+  rdm:async function(kid,prizeId){
+    var pr=PRIZES.find(function(x){return x.id===prizeId;});
+    var need=s2p(pr.shek),p=live.pts[kid]||0;
+    if(p<need){flash("חסרות "+(need-p)+" נקודות 😕","#FFF0F0","#C0392B");return;}
+    // מימוש פרס מוריד רק מ-pts (הצבירה), לא מהדירוג השבועי
+    await fSet("pts/"+kid,p-need);
+    var hid=uid();
+    await fSet("hist/"+hid,{id:hid,kid:kid,label:"פרס: "+pr.label,pts:-need,emoji:pr.emoji,time:now(),ts:Date.now()});
+    flash("🎉 "+pr.label+"!","#FFF9E6","#8D6E00");
+  },
+  rpin:async function(kid){
+    if(!confirm("לאפס PIN של "+gk(kid).name+"?"))return;
+    await fDel("pins/"+kid);
+    flash("🔑 PIN אופס","#EDFAF6","#00714F");
+  },
+  resetWeek:async function(){
+    if(!confirm("לאפס את הדירוג השבועי?\n(נקודות הפרסים לא יושפעו)"))return;
+    // מאפס רק wpts — pts נשארים בעינם
+    await fSet("wpts",{adar:0,agam:0,ariel:0,itay:0});
+    flash("🏆 דירוג שבועי אופס! נקודות הפרסים נשמרו ✅","#FFF9E6","#8D6E00");
+  },
+  ra:async function(){
+    if(!confirm("לאפס הכל לגמרי?\n(גם נקודות פרסים וגם דירוג שבועי)"))return;
+    await fSet("pts",{adar:0,agam:0,ariel:0,itay:0});
+    await fSet("wpts",{adar:0,agam:0,ariel:0,itay:0});
+    await fSet("pend",null);
+    await fSet("hist",null);
+    flash("🔄 הכל אופס!","#F0EEFF","#6C5CE7");
+  },
+  dh:async function(id){
+    var item=hArr().find(function(x){return x.id===id;});
+    if(!item)return;
+    await fSet("pts/"+item.kid,Math.max(0,(live.pts[item.kid]||0)-item.pts));
+    await fSet("wpts/"+item.kid,Math.max(0,(live.wpts[item.kid]||0)-item.pts));
+    await fDel("hist/"+id);
+    flash("🗑️ נמחק","#F0EEFF","#6C5CE7");
+  },
+  ch:async function(){
+    if(!confirm("למחוק את כל ההיסטוריה?"))return;
+    await fSet("hist",null);
+  },
+  rep:async function(kid,itemId,cat){
+    var items=cat==="task"?TASKS:GOOD;
+    var item=items.find(function(x){return x.id===itemId;});
+    if(!item)return;
+    var pid=uid();
+    await fSet("pend/"+pid,{id:pid,kid:kid,type:cat,label:item.label,pts:item.pts,emoji:item.emoji,time:now(),ts:Date.now()});
+    flash(item.emoji+" "+item.label+" נשלח לאישור ⏳","#EDFAF6","#00714F");
+  }
+};
+</script>
+</body>
+</html>
