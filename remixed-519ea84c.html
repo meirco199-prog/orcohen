@@ -73,12 +73,17 @@ var BAD=[
   {id:"ign",   label:"התעלמות ממשימה",  pts:-1,emoji:"🚫"},
 ];
 var PRIZES=[
-  {id:"p1",label:"בחירת ארוחת ערב",shek:4, emoji:"🍕"},
-  {id:"p2",label:"שעה נוספת מסך",  shek:3, emoji:"📱"},
-  {id:"p3",label:"טיול בחירה",     shek:10,emoji:"🎡"},
-  {id:"p4",label:"ג'אנק פוד",      shek:4, emoji:"🍔"},
-  {id:"p5",label:"לא לסדר חדר יום",shek:2, emoji:"😴"},
-  {id:"p6",label:"סרט בחירה",      shek:2, emoji:"🎬"},
+  {id:"p1",label:"בחירת ארוחת ערב",shek:4,  emoji:"🍕"},
+  {id:"p2",label:"שעה נוספת מסך",  shek:3,  emoji:"📱"},
+  {id:"p3",label:"טיול בחירה",     shek:10, emoji:"🎡"},
+  {id:"p4",label:"ג'אנק פוד",      shek:4,  emoji:"🍔"},
+  {id:"p5",label:"לא לסדר חדר יום",shek:2,  emoji:"😴"},
+  {id:"p6",label:"סרט בחירה",      shek:2,  emoji:"🎬"},
+  {id:"p7",label:"צעצוע עד 100 ₪", shek:100,emoji:"🧸",bigPts:100},
+  {id:"p8",label:"צעצוע עד 150 ₪", shek:150,emoji:"🎮",bigPts:150},
+  {id:"p9",label:"המרה ל-200 ₪",   shek:200,emoji:"💵",bigPts:200},
+  {id:"p10",label:"קונסולת משחקים",shek:999,emoji:"🕹️",bigPts:500},
+  {id:"p11",label:"אייפון",         shek:999,emoji:"📱✨",bigPts:1000},
 ];
 
 function p2s(p){return(p/5).toFixed(1);}
@@ -299,13 +304,24 @@ function rKid(kid){
         +'<div style="font-size:13px;font-weight:700;color:'+k.color+'">'+wp+'⭐</div>'
       +'</div></div>'
       +'<div style="font-size:11px;color:#888;margin-bottom:10px;text-align:center">5 נקודות = 1 ₪ · הנקודות לפרסים לא מתאפסות</div>'
-      +'<div class="g2">'+PRIZES.map(function(pr){
+      +'<div style="font-size:11px;font-weight:700;color:#888;margin-bottom:8px;letter-spacing:0.5px">🎁 פרסים רגילים</div>'
+      +'<div class="g2" style="margin-bottom:16px">'+PRIZES.filter(function(pr){return!pr.bigPts;}).map(function(pr){
         var need=s2p(pr.shek),can=p>=need;
         return'<button onclick="window.W.rdm(\''+kid+'\',\''+pr.id+'\')" style="background:'+(can?k.light:"#F5F5F5")+';border-radius:14px;padding:14px 10px;border:1.5px solid '+(can?k.color:"#E0E0E0")+';opacity:'+(can?1:0.6)+';text-align:center;display:flex;flex-direction:column;align-items:center;gap:5px;width:100%;touch-action:manipulation">'
           +'<span style="font-size:24px">'+pr.emoji+'</span>'
           +'<span style="font-size:11px;font-weight:600;color:#1A1A2E;line-height:1.3">'+pr.label+'</span>'
           +'<span style="font-size:13px;font-weight:800;color:'+(can?k.dark:"#999")+'">'+pr.shek+' ₪</span>'
           +'<span style="font-size:10px;color:#999">'+need+'⭐</span></button>';
+      }).join("")+'</div>'
+      +'<div style="font-size:11px;font-weight:700;color:#FF6B00;margin-bottom:8px;letter-spacing:0.5px">🏆 פרסים גדולים</div>'
+      +'<div class="g2">'+PRIZES.filter(function(pr){return!!pr.bigPts;}).map(function(pr){
+        var need=pr.bigPts,can=p>=need;
+        return'<button onclick="window.W.rdm(\''+kid+'\',\''+pr.id+'\')" style="background:'+(can?"linear-gradient(135deg,#FFF9E6,#FFF3CC)":"#F5F5F5")+';border-radius:14px;padding:14px 10px;border:2px solid '+(can?"#FFD700":"#E0E0E0")+';opacity:'+(can?1:0.6)+';text-align:center;display:flex;flex-direction:column;align-items:center;gap:5px;width:100%;touch-action:manipulation">'
+          +'<span style="font-size:28px">'+pr.emoji+'</span>'
+          +'<span style="font-size:11px;font-weight:700;color:#1A1A2E;line-height:1.3">'+pr.label+'</span>'
+          +'<span style="font-size:14px;font-weight:900;color:'+(can?"#8D6E00":"#999")+'">'+need+' ⭐</span>'
+          +(need>=500?'<span style="font-size:10px;color:'+(can?"#8D6E00":"#aaa")+'">🔒 נדרש אישור הורים</span>':"")
+        +'</button>';
       }).join("")+'</div>';
   }
 
@@ -516,9 +532,9 @@ window.W={
   },
   rdm:async function(kid,prizeId){
     var pr=PRIZES.find(function(x){return x.id===prizeId;});
-    var need=s2p(pr.shek),p=live.pts[kid]||0;
+    var need=pr.bigPts||s2p(pr.shek),p=live.pts[kid]||0;
     if(p<need){flash("חסרות "+(need-p)+" נקודות 😕","#FFF0F0","#C0392B");return;}
-    // מימוש פרס מוריד רק מ-pts (הצבירה), לא מהדירוג השבועי
+    if(pr.bigPts>=500&&!confirm("פרס גדול! לאשר עם ההורים?")){return;}
     await fSet("pts/"+kid,p-need);
     var hid=uid();
     await fSet("hist/"+hid,{id:hid,kid:kid,label:"פרס: "+pr.label,pts:-need,emoji:pr.emoji,time:now(),ts:Date.now()});
