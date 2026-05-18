@@ -59,53 +59,66 @@ var KIDS=[
   {id:"ariel",name:"אריאל",age:10,emoji:"🌸",color:"#FD79A8",light:"#FFF0F6",dark:"#C0165E"},
   {id:"itay", name:"איתי", age:14,emoji:"⚡", color:"#00B894",light:"#EDFAF6",dark:"#007A5E"},
 ];
-var TASKS=[
-  {id:"room",  label:"סידור חדר",      pts:1,emoji:"🛏️"},
-  {id:"dish",  label:"כלים / מדיח",    pts:1,emoji:"🍽️"},
-  {id:"hw",    label:"שיעורי בית",     pts:1,emoji:"📚"},
-  {id:"trash", label:"אשפה / מיחזור", pts:1,emoji:"♻️"},
-  {id:"cook",  label:"עזרה בבישול",    pts:1,emoji:"🍳"},
-  {id:"dog",   label:"לינקה / כלב",    pts:1,emoji:"🐕"},
-  {id:"wc",    label:"לנקות שירותים",  pts:2,emoji:"🚽"},
-  {id:"light", label:"עזרה עם אור",    pts:1,emoji:"💡"},
-  {id:"super", label:"עזרה בסופר",     pts:1,emoji:"🛒"},
-  {id:"bags",  label:"סידור קניות",    pts:1,emoji:"🛍️"},
+var DTASKS=[
+  {id:"room",  label:"סידור חדר",      pts:1,emoji:"🛏️",order:1},
+  {id:"dish",  label:"כלים / מדיח",    pts:1,emoji:"🍽️",order:2},
+  {id:"hw",    label:"שיעורי בית",     pts:1,emoji:"📚",order:3},
+  {id:"trash", label:"אשפה / מיחזור", pts:1,emoji:"♻️",order:4},
+  {id:"cook",  label:"עזרה בבישול",    pts:1,emoji:"🍳",order:5},
+  {id:"dog",   label:"לינקה / כלב",    pts:1,emoji:"🐕",order:6},
+  {id:"wc",    label:"לנקות שירותים",  pts:2,emoji:"🚽",order:7},
+  {id:"light", label:"עזרה עם אור",    pts:1,emoji:"💡",order:8},
+  {id:"super", label:"עזרה בסופר",     pts:1,emoji:"🛒",order:9},
+  {id:"bags",  label:"סידור קניות",    pts:1,emoji:"🛍️",order:10},
 ];
-var GOOD=[
-  {id:"help",  label:"עזרה לאח/אחות", pts:2,emoji:"🤝"},
-  {id:"kind",  label:"אדיבות",         pts:1,emoji:"💛"},
-  {id:"init",  label:"יוזמה",          pts:2,emoji:"⭐"},
-  {id:"share", label:"שיתוף",          pts:1,emoji:"🎁"},
-  {id:"give",  label:"ויתור",          pts:2,emoji:"🕊️"},
+var DGOOD=[
+  {id:"help",  label:"עזרה לאח/אחות", pts:2,emoji:"🤝",order:1},
+  {id:"kind",  label:"אדיבות",         pts:1,emoji:"💛",order:2},
+  {id:"init",  label:"יוזמה",          pts:2,emoji:"⭐",order:3},
+  {id:"share", label:"שיתוף",          pts:1,emoji:"🎁",order:4},
+  {id:"give",  label:"ויתור",          pts:2,emoji:"🕊️",order:5},
 ];
-var BAD=[
-  {id:"fight", label:"ריב",              pts:-2,emoji:"😤"},
-  {id:"rude",  label:"חוצפה",            pts:-2,emoji:"🙄"},
-  {id:"lie",   label:"שקר",             pts:-3,emoji:"🤥"},
-  {id:"ign",   label:"התעלמות ממשימה",  pts:-1,emoji:"🚫"},
+var DBAD=[
+  {id:"fight", label:"ריב",              pts:-2,emoji:"😤",order:1},
+  {id:"rude",  label:"חוצפה",            pts:-2,emoji:"🙄",order:2},
+  {id:"lie",   label:"שקר",             pts:-3,emoji:"🤥",order:3},
+  {id:"ign",   label:"התעלמות ממשימה",  pts:-1,emoji:"🚫",order:4},
 ];
-var PRIZES=[
-  {id:"p1",label:"בחירת ארוחת ערב",shek:4,  emoji:"🍕"},
-  {id:"p2",label:"שעה נוספת מסך",  shek:3,  emoji:"📱"},
-  {id:"p3",label:"טיול בחירה",     shek:10, emoji:"🎡"},
-  {id:"p4",label:"ג'אנק פוד",      shek:4,  emoji:"🍔"},
-  {id:"p5",label:"לא לסדר חדר יום",shek:2,  emoji:"😴"},
-  {id:"p6",label:"סרט בחירה",      shek:2,  emoji:"🎬"},
-  {id:"p7",label:"צעצוע עד 100 ₪", shek:100,emoji:"🧸",bigPts:100},
-  {id:"p8",label:"צעצוע עד 150 ₪", shek:150,emoji:"🎮",bigPts:150},
-  {id:"p9",label:"המרה ל-200 ₪",   shek:200,emoji:"💵",bigPts:200},
-  {id:"p10",label:"קונסולת משחקים",shek:999,emoji:"🕹️",bigPts:500},
-  {id:"p11",label:"אייפון",         shek:999,emoji:"📱✨",bigPts:1000},
+var DPRIZES=[
+  {id:"p1",label:"בחירת ארוחת ערב",shek:4,  emoji:"🍕",order:1},
+  {id:"p2",label:"שעה נוספת מסך",  shek:3,  emoji:"📱",order:2},
+  {id:"p3",label:"טיול בחירה",     shek:10, emoji:"🎡",order:3},
+  {id:"p4",label:"ג'אנק פוד",      shek:4,  emoji:"🍔",order:4},
+  {id:"p5",label:"לא לסדר חדר יום",shek:2,  emoji:"😴",order:5},
+  {id:"p6",label:"סרט בחירה",      shek:2,  emoji:"🎬",order:6},
+  {id:"p7",label:"צעצוע עד 100 ₪", shek:100,emoji:"🧸",bigPts:100,order:7},
+  {id:"p8",label:"צעצוע עד 150 ₪", shek:150,emoji:"🎮",bigPts:150,order:8},
+  {id:"p9",label:"המרה ל-200 ₪",   shek:200,emoji:"💵",bigPts:200,order:9},
+  {id:"p10",label:"קונסולת משחקים",shek:999,emoji:"🕹️",bigPts:500,order:10},
+  {id:"p11",label:"אייפון",         shek:999,emoji:"📱✨",bigPts:1000,order:11},
 ];
+var DEFAULTS={tasks:DTASKS,good:DGOOD,bad:DBAD,prizes:DPRIZES};
+function gList(catName){
+  var c=live.cfg&&live.cfg[catName];
+  if(!c||typeof c!=="object")return DEFAULTS[catName];
+  var arr=Object.values(c).filter(function(x){return x&&x.id;});
+  if(arr.length===0)return DEFAULTS[catName];
+  return arr.sort(function(a,b){return(a.order||0)-(b.order||0);});
+}
+function gTasks(){return gList("tasks");}
+function gGood(){return gList("good");}
+function gBad(){return gList("bad");}
+function gPrizes(){return gList("prizes");}
 
 function p2s(p){return(p/5).toFixed(1);}
 function s2p(s){return s*5;}
 
 var zero={adar:0,agam:0,ariel:0,itay:0};
-var live={pts:Object.assign({},zero),wpts:Object.assign({},zero),pend:{},hist:{},pins:{},photos:{}};
+var live={pts:Object.assign({},zero),wpts:Object.assign({},zero),pend:{},hist:{},pins:{},photos:{},cfg:{}};
 var S={v:"home",pFor:null,pMode:null,pIn:"",pFirst:"",pErr:"",
        kTab:"rep",kCat:"task",parTab:"dash",
-       fl:null,flT:null,cKid:"",cLabel:"",cPts:"",cBonus:true};
+       fl:null,flT:null,cKid:"",cLabel:"",cPts:"",cBonus:true,
+       eCat:"tasks",eEdit:null};
 
 function el(){return document.getElementById("root");}
 function gk(id){return KIDS.find(function(k){return k.id===id;});}
@@ -129,6 +142,7 @@ onValue(ref(DB,"pend"),function(s){live.pend=s.val()||{};render();});
 onValue(ref(DB,"hist"),function(s){live.hist=s.val()||{};render();});
 onValue(ref(DB,"pins"),function(s){live.pins=s.val()||{};render();});
 onValue(ref(DB,"photos"),function(s){live.photos=s.val()||{};render();});
+onValue(ref(DB,"cfg"),function(s){live.cfg=s.val()||{};render();});
 
 function ava(k,sz){
   sz=sz||32;
@@ -279,7 +293,7 @@ function rKid(kid){
             +'</div></div>';
         }).join("")+'</div>';
     }
-    var items=cat==="task"?TASKS:GOOD;
+    var items=cat==="task"?gTasks():gGood();
     var cb=[["task","🛏️","מטלות"],["good","💛","התנהגות"]].map(function(a){
       return'<button onclick="window.W.skc(\''+a[0]+'\')" style="flex:1;padding:9px 4px;border-radius:12px;border:1.5px solid '+(cat===a[0]?k.color:"#E0E0E0")+';background:'+(cat===a[0]?k.color:"#fff")+';color:'+(cat===a[0]?"#fff":"#666")+';font-weight:600;font-size:11px;touch-action:manipulation">'+a[1]+' '+a[2]+'</button>';
     }).join("");
@@ -317,7 +331,7 @@ function rKid(kid){
       +'</div></div>'
       +'<div style="font-size:11px;color:#888;margin-bottom:10px;text-align:center">5 נקודות = 1 ₪ · הנקודות לפרסים לא מתאפסות</div>'
       +'<div style="font-size:11px;font-weight:700;color:#888;margin-bottom:8px;letter-spacing:0.5px">🎁 פרסים רגילים</div>'
-      +'<div class="g2" style="margin-bottom:16px">'+PRIZES.filter(function(pr){return!pr.bigPts;}).map(function(pr){
+      +'<div class="g2" style="margin-bottom:16px">'+gPrizes().filter(function(pr){return!pr.bigPts;}).map(function(pr){
         var need=s2p(pr.shek),can=p>=need;
         return'<button onclick="window.W.rdm(\''+kid+'\',\''+pr.id+'\')" style="background:'+(can?k.light:"#F5F5F5")+';border-radius:14px;padding:14px 10px;border:1.5px solid '+(can?k.color:"#E0E0E0")+';opacity:'+(can?1:0.6)+';text-align:center;display:flex;flex-direction:column;align-items:center;gap:5px;width:100%;touch-action:manipulation">'
           +'<span style="font-size:24px">'+pr.emoji+'</span>'
@@ -326,7 +340,7 @@ function rKid(kid){
           +'<span style="font-size:10px;color:#999">'+need+'⭐</span></button>';
       }).join("")+'</div>'
       +'<div style="font-size:11px;font-weight:700;color:#FF6B00;margin-bottom:8px;letter-spacing:0.5px">🏆 פרסים גדולים</div>'
-      +'<div class="g2">'+PRIZES.filter(function(pr){return!!pr.bigPts;}).map(function(pr){
+      +'<div class="g2">'+gPrizes().filter(function(pr){return!!pr.bigPts;}).map(function(pr){
         var need=pr.bigPts,can=p>=need;
         return'<button onclick="window.W.rdm(\''+kid+'\',\''+pr.id+'\')" style="background:'+(can?"linear-gradient(135deg,#FFF9E6,#FFF3CC)":"#F5F5F5")+';border-radius:14px;padding:14px 10px;border:2px solid '+(can?"#FFD700":"#E0E0E0")+';opacity:'+(can?1:0.6)+';text-align:center;display:flex;flex-direction:column;align-items:center;gap:5px;width:100%;touch-action:manipulation">'
           +'<span style="font-size:28px">'+pr.emoji+'</span>'
@@ -410,7 +424,55 @@ function rParent(){
       +'<button onclick="window.W.resetWeek()" style="width:100%;margin-top:10px;padding:12px;border-radius:12px;background:#FFF9E6;border:1.5px solid #FFD70066;color:#8D6E00;font-weight:700;font-size:14px;touch-action:manipulation">🔄 אפס דירוג שבועי בלבד</button>'
       +'<div style="font-size:11px;color:#aaa;text-align:center;margin-top:6px">נקודות הפרסים לא מושפעות</div>'
     +'</div>'
+    +'<button onclick="window.W.spt(\'edit\')" style="width:100%;padding:14px;border-radius:14px;background:linear-gradient(135deg,#6C5CE7,#A29BFE);color:#fff;font-weight:700;font-size:14px;margin-bottom:12px;touch-action:manipulation">⚙️ ניהול מטלות, התנהגות ופרסים</button>'
     +'<div class="g2">'+kc+'</div>';
+  }
+
+  if(tab==="edit"){
+    var ec=S.eCat,labels={tasks:["📝","מטלות"],good:["💛","התנהגות"],bad:["⚠️","עונשים"],prizes:["🎁","פרסים"]};
+    var cats=["tasks","good","bad","prizes"];
+    var catTabs=cats.map(function(cc){
+      var L=labels[cc];
+      return'<button onclick="window.W.eSetCat(\''+cc+'\')" style="flex:1;padding:9px 4px;border-radius:10px;border:1.5px solid '+(ec===cc?"#6C5CE7":"#E0E0E0")+';background:'+(ec===cc?"#F0EEFF":"#fff")+';color:'+(ec===cc?"#6C5CE7":"#666")+';font-weight:600;font-size:11px;touch-action:manipulation">'+L[0]+' '+L[1]+'</button>';
+    }).join("");
+    var list=gList(ec);
+    var rows=list.map(function(it){
+      var ptsTxt=ec==="prizes"?(it.shek+" ₪"+(it.bigPts?" · "+it.bigPts+"⭐":"")):(it.pts+"⭐");
+      return'<div style="background:#fff;border-radius:12px;padding:12px;margin-bottom:8px;border:1px solid #ECECEC;display:flex;align-items:center;gap:10px">'
+        +'<div style="font-size:22px;width:32px;text-align:center">'+(it.emoji||"•")+'</div>'
+        +'<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:#1A1A2E">'+it.label+'</div><div style="font-size:11px;color:#888">'+ptsTxt+'</div></div>'
+        +'<button onclick="window.W.eEdit(\''+it.id+'\')" style="background:#F0EEFF;color:#6C5CE7;width:34px;height:34px;border-radius:50%;font-size:15px;touch-action:manipulation">✏️</button>'
+        +'<button onclick="window.W.eDelete(\''+it.id+'\')" style="background:#FFF0F0;color:#FF6B6B;width:34px;height:34px;border-radius:50%;font-size:16px;touch-action:manipulation">×</button>'
+      +'</div>';
+    }).join("");
+    var form="";
+    if(S.eEdit){
+      var e=S.eEdit,isPrize=ec==="prizes",isBad=ec==="bad";
+      form='<div class="card" style="border:2px solid #6C5CE7">'
+        +'<div style="font-size:13px;font-weight:700;color:#6C5CE7;margin-bottom:10px">'+(e.isNew?"➕ פריט חדש":"✏️ עריכה")+'</div>'
+        +'<div style="font-size:11px;color:#666;margin-bottom:4px">אימוג\'י</div>'
+        +'<input id="eEmoji" value="'+(e.emoji||"")+'" maxlength="4" placeholder="🎯" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid #E0E0E0;font-size:18px;text-align:center;margin-bottom:10px;outline:none"/>'
+        +'<div style="font-size:11px;color:#666;margin-bottom:4px">שם / תיאור</div>'
+        +'<input id="eLabel" value="'+(e.label||"").replace(/"/g,"&quot;")+'" placeholder="סידור חדר..." style="width:100%;padding:10px;border-radius:10px;border:1.5px solid #E0E0E0;font-size:14px;margin-bottom:10px;outline:none"/>'
+        +(isPrize
+          ?'<div style="font-size:11px;color:#666;margin-bottom:4px">מחיר ב-₪</div>'
+           +'<input id="eShek" type="number" min="1" value="'+(e.shek||"")+'" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid #E0E0E0;font-size:14px;margin-bottom:10px;outline:none"/>'
+           +'<label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#666;margin-bottom:10px"><input type="checkbox" id="eBig" '+(e.bigPts?"checked":"")+' style="width:18px;height:18px"/> פרס גדול (דורש נקודות במקום ₪)</label>'
+           +'<div style="font-size:11px;color:#666;margin-bottom:4px">⭐ נדרשות (לפרס גדול)</div>'
+           +'<input id="eBigPts" type="number" min="1" value="'+(e.bigPts||"")+'" placeholder="100" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid #E0E0E0;font-size:14px;margin-bottom:14px;outline:none"/>'
+          :'<div style="font-size:11px;color:#666;margin-bottom:4px">נקודות '+(isBad?"(מספר חיובי - יורדו):":"(חיובי):")+'</div>'
+           +'<input id="ePts" type="number" min="1" value="'+(isBad?Math.abs(e.pts||0):(e.pts||""))+'" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid #E0E0E0;font-size:14px;margin-bottom:14px;outline:none"/>')
+        +'<div style="display:flex;gap:8px">'
+          +'<button onclick="window.W.eSave()" style="flex:1;padding:12px;border-radius:10px;background:#6C5CE7;color:#fff;font-weight:700;font-size:14px;touch-action:manipulation">💾 שמור</button>'
+          +'<button onclick="window.W.eCancel()" style="flex:1;padding:12px;border-radius:10px;background:#fff;color:#666;border:1.5px solid #E0E0E0;font-weight:700;font-size:14px;touch-action:manipulation">ביטול</button>'
+        +'</div>'
+      +'</div>';
+    }
+    c='<div style="display:flex;gap:6px;margin-bottom:14px">'+catTabs+'</div>'
+      +form
+      +(S.eEdit?"":'<button onclick="window.W.eNew()" style="width:100%;padding:13px;border-radius:12px;background:#6C5CE7;color:#fff;font-weight:700;font-size:14px;margin-bottom:12px;touch-action:manipulation">➕ הוסף פריט חדש</button>')
+      +(list.length===0?'<div style="text-align:center;padding:30px 0;color:#999">אין פריטים. הוסיפו אחד 👆</div>':rows)
+      +'<button onclick="window.W.eRestore()" style="width:100%;margin-top:10px;padding:11px;border-radius:10px;background:#FFF9E6;color:#8D6E00;border:1px solid #FFD70066;font-weight:600;font-size:12px;touch-action:manipulation">🔄 שחזר ברירת מחדל לקטגוריה זו</button>';
   }
 
   if(tab==="pend"){
@@ -433,7 +495,7 @@ function rParent(){
     var kb=KIDS.map(function(k){
       return'<button onclick="window.W.sck(\''+k.id+'\')" style="padding:8px 14px;border-radius:20px;border:2px solid '+(S.cKid===k.id?k.color:"#E0E0E0")+';background:'+(S.cKid===k.id?k.light:"#fff")+';color:'+(S.cKid===k.id?k.dark:"#666")+';font-weight:600;font-size:13px;touch-action:manipulation">'+k.emoji+' '+k.name+'</button>';
     }).join("");
-    var qb=BAD.map(function(item){
+    var qb=gBad().map(function(item){
       return'<button onclick="window.W.qb(\''+item.id+'\')" style="background:#FFF0F0;border-radius:12px;padding:10px 8px;border:1px solid #FF6B6B33;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px;width:100%;touch-action:manipulation">'
         +'<span style="font-size:20px">'+item.emoji+'</span>'
         +'<span style="font-size:11px;font-weight:500;color:#C0392B">'+item.label+'</span>'
@@ -474,7 +536,7 @@ function rParent(){
       }).join(""));
   }
 
-  var nav=[["dash","🏠","ראשי"],["pend","⏳","אישור"+(pa.length>0?" ("+pa.length+")":"")],["add","➕","הוסף"],["hist","📋","היסטוריה"]].map(function(a){
+  var nav=[["dash","🏠","ראשי"],["pend","⏳","אישור"+(pa.length>0?" ("+pa.length+")":"")],["add","➕","הוסף"],["edit","⚙️","ניהול"],["hist","📋","היסטוריה"]].map(function(a){
     return'<button class="'+(tab===a[0]?"on":"")+'" style="color:'+(tab===a[0]?"#1A1A2E":"#999")+'" onclick="window.W.spt(\''+a[0]+'\')">'+a[1]+'<br>'+a[2]+'</button>';
   }).join("");
 
@@ -533,7 +595,7 @@ window.W={
     flash(pts>0?"✅ בונוס נוסף!":"🚫 עונש הוחל!",pts>0?"#EDFAF6":"#FFF0F0",pts>0?"#00714F":"#C0392B");
   },
   qb:async function(itemId){
-    var item=BAD.find(function(x){return x.id===itemId;});
+    var item=gBad().find(function(x){return x.id===itemId;});
     if(!S.cKid){flash("בחר ילד קודם","#FFF9E6","#8D6E00");return;}
     var kid=S.cKid;
     await fSet("pts/"+kid,Math.max(0,(live.pts[kid]||0)+item.pts));
@@ -543,7 +605,7 @@ window.W={
     flash(item.emoji+" "+item.label+" הוחל","#FFF0F0","#C0392B");
   },
   rdm:async function(kid,prizeId){
-    var pr=PRIZES.find(function(x){return x.id===prizeId;});
+    var pr=gPrizes().find(function(x){return x.id===prizeId;});
     var need=pr.bigPts||s2p(pr.shek),p=live.pts[kid]||0;
     if(p<need){flash("חסרות "+(need-p)+" נקודות 😕","#FFF0F0","#C0392B");return;}
     if(pr.bigPts>=500&&!confirm("פרס גדול! לאשר עם ההורים?")){return;}
@@ -584,12 +646,67 @@ window.W={
     await fSet("hist",null);
   },
   rep:async function(kid,itemId,cat){
-    var items=cat==="task"?TASKS:GOOD;
+    var items=cat==="task"?gTasks():gGood();
     var item=items.find(function(x){return x.id===itemId;});
     if(!item)return;
     var pid=uid();
     await fSet("pend/"+pid,{id:pid,kid:kid,type:cat,label:item.label,pts:item.pts,emoji:item.emoji,time:now(),ts:Date.now()});
     flash(item.emoji+" "+item.label+" נשלח לאישור ⏳","#EDFAF6","#00714F");
+  },
+  eSetCat:function(c){S.eCat=c;S.eEdit=null;render();},
+  eNew:function(){
+    var isPrize=S.eCat==="prizes",isBad=S.eCat==="bad";
+    S.eEdit={isNew:true,id:uid(),label:"",emoji:"",pts:isBad?-1:1,shek:isPrize?5:undefined,bigPts:undefined};
+    render();
+  },
+  eEdit:function(id){
+    var it=gList(S.eCat).find(function(x){return x.id===id;});
+    if(!it)return;
+    S.eEdit=Object.assign({isNew:false},it);
+    render();
+  },
+  eCancel:function(){S.eEdit=null;render();},
+  eSave:async function(){
+    var e=S.eEdit;if(!e)return;
+    var emoji=(document.getElementById("eEmoji")||{}).value||e.emoji||"•";
+    var label=((document.getElementById("eLabel")||{}).value||"").trim();
+    if(!label){flash("נדרש שם","#FFF0F0","#C0392B");return;}
+    var item={id:e.id,label:label,emoji:emoji,order:e.order||Date.now()};
+    if(S.eCat==="prizes"){
+      var shek=parseInt((document.getElementById("eShek")||{}).value)||0;
+      var big=(document.getElementById("eBig")||{}).checked;
+      var bigPts=parseInt((document.getElementById("eBigPts")||{}).value)||0;
+      if(shek<=0&&!big){flash("מחיר ב-₪ נדרש","#FFF0F0","#C0392B");return;}
+      item.shek=shek||999;
+      if(big&&bigPts>0)item.bigPts=bigPts;
+    }else{
+      var raw=parseInt((document.getElementById("ePts")||{}).value)||0;
+      if(raw<=0){flash("נקודות חייבות להיות > 0","#FFF0F0","#C0392B");return;}
+      item.pts=S.eCat==="bad"?-raw:raw;
+    }
+    await fSet("cfg/"+S.eCat+"/"+item.id,item);
+    S.eEdit=null;
+    flash("💾 נשמר","#EDFAF6","#00714F");
+  },
+  eDelete:async function(id){
+    var it=gList(S.eCat).find(function(x){return x.id===id;});
+    if(!it)return;
+    if(!confirm("למחוק '"+it.label+"'?"))return;
+    var cur=live.cfg&&live.cfg[S.eCat];
+    if(!cur||typeof cur!=="object"){
+      var seed={};gList(S.eCat).forEach(function(x){if(x.id!==id)seed[x.id]=x;});
+      await fSet("cfg/"+S.eCat,seed);
+    }else{
+      await fDel("cfg/"+S.eCat+"/"+id);
+    }
+    flash("🗑️ נמחק","#F0EEFF","#6C5CE7");
+  },
+  eRestore:async function(){
+    if(!confirm("לשחזר את הרשימה לברירת המחדל?\nכל שינוי שעשית בקטגוריה הזו יימחק."))return;
+    var def=DEFAULTS[S.eCat],obj={};
+    def.forEach(function(x){obj[x.id]=Object.assign({},x);});
+    await fSet("cfg/"+S.eCat,obj);
+    flash("🔄 שוחזר","#EDFAF6","#00714F");
   }
 };
 </script>
